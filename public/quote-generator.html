@@ -2,28 +2,20 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta
-    name="viewport"
-    content="width=device-width,initial-scale=1,viewport-fit=cover"
-  />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Quote Generator</title>
-
-  <!-- Tailwind via CDN is fine for a standalone public page.
-       If you prefer your project CSS pipeline, you can remove this and use your compiled CSS. -->
   <script src="https://cdn.tailwindcss.com"></script>
-
   <style>
-    /* Minor helpers */
-    .form-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 1rem; }
-    .field { grid-column: span 3 / span 3; }
-    .field-2 { grid-column: span 2 / span 2; }
-    .field-1 { grid-column: span 1 / span 1; }
-    @media (max-width: 768px) {
-      .field, .field-2, .field-1 { grid-column: span 6 / span 6; }
-    }
-    .btn { @apply inline-flex items-center justify-center px-4 py-2 rounded-lg font-medium border transition; }
-    .btn-primary { @apply bg-amber-700 text-white border-amber-800 hover:bg-amber-800; }
-    .btn-secondary { @apply bg-white text-amber-800 border-amber-800 hover:bg-amber-50; }
+    .form-grid { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:1rem; }
+    .field { grid-column:span 3 / span 3; }
+    .field-2 { grid-column:span 2 / span 2; }
+    .field-1 { grid-column:span 1 / span 1; }
+    @media (max-width: 768px){ .field,.field-2,.field-1{ grid-column:span 6 / span 6; } }
+    .btn { display:inline-flex; align-items:center; justify-content:center; padding:0.5rem 1rem; border-radius:0.5rem; font-weight:500; border-width:1px; transition:all .2s; }
+    .btn-primary { background:#92400e; color:#fff; border-color:#78350f; }
+    .btn-primary:hover { background:#78350f; }
+    .btn-secondary { background:#fff; color:#78350f; border-color:#78350f; }
+    .btn-secondary:hover { background:#fffbeb; }
   </style>
 </head>
 <body class="bg-amber-50 text-zinc-900">
@@ -34,7 +26,6 @@
     </header>
 
     <form id="quote-form" class="space-y-6 bg-white p-6 rounded-2xl shadow">
-      <!-- Customer block -->
       <section>
         <h2 class="text-lg font-semibold text-amber-800 mb-3">Customer</h2>
         <div class="form-grid">
@@ -84,18 +75,12 @@
         </div>
       </section>
 
-      <!-- Products -->
       <section>
         <h2 class="text-lg font-semibold text-amber-800 mb-3">Products</h2>
-
         <div id="products" class="space-y-3"></div>
-
-        <button id="add-product" type="button" class="btn btn-secondary mt-2">
-          + Add product
-        </button>
+        <button id="add-product" type="button" class="btn btn-secondary mt-2">+ Add product</button>
       </section>
 
-      <!-- Notes -->
       <section>
         <h2 class="text-lg font-semibold text-amber-800 mb-3">Notes</h2>
         <textarea id="notes" rows="4" class="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-800" placeholder="Payment terms, delivery, additional info..."></textarea>
@@ -141,7 +126,7 @@
   </template>
 
   <script>
-    // --- Simple product catalog to enable brand -> product dependency
+    // --- Catalog for brand -> product dependency
     const PRODUCT_CATALOG = {
       "D'Aria": ["Songbird Sauvignon Blanc", "Blush Rosé", "Merlot"],
       "Namaqua": ["Sweet Rosé", "Dry White", "Cabernet Sauvignon"],
@@ -149,7 +134,6 @@
       "Goiya": ["Sauvignon Blanc", "Cabernet Sauvignon"]
     };
 
-    // --- Helpers
     const fmtMoney = (symbol, n) => `${symbol}${Number(n || 0).toFixed(2)}`;
 
     function addProductRow() {
@@ -180,7 +164,6 @@
       const symbol = currencySel.value;
       const code = currencySel.options[currencySel.selectedIndex].text.split(' ')[0];
 
-      // Collect products
       const rows = Array.from(document.querySelectorAll('#products > div.grid'));
       const items = rows.map(r => {
         const brand = r.querySelector('[name="product_brand"]').value || '';
@@ -223,17 +206,15 @@
 
       const incotermFull = form.port ? `${form.incoterm} (${form.port}) Incoterms® 2020` : `${form.incoterm} Incoterms® 2020`;
 
-      // IMPORTANT: include export libraries INSIDE the popup so the buttons work
+      // IMPORTANT: escape closing </script> as <\/script> to avoid breaking the outer script.
       return `<!doctype html>
 <html>
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Quotation ${form.quote_no}</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    @media print { #button-bar { display: none !important; } }
-  </style>
+  <script src="https://cdn.tailwindcss.com"><\/script>
+  <style>@media print { #button-bar{display:none !important;} }</style>
 </head>
 <body class="bg-white text-zinc-900">
   <div id="button-bar" class="sticky top-0 z-10 bg-amber-50 border-b border-amber-200 px-4 py-3 flex gap-2 justify-end">
@@ -291,16 +272,14 @@
       <div class="text-sm whitespace-pre-wrap">${form.notes}</div>
     </section>` : ''}
 
-    <footer class="text-xs text-zinc-500 mt-8">
-      Generated by Quote Generator
-    </footer>
+    <footer class="text-xs text-zinc-500 mt-8">Generated by Quote Generator</footer>
   </main>
 
-  <!-- Export libs (must be in the popup so handlers work) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js" integrity="sha512-5x3b7R3v7Hq8+vPa8mYb+1v7YH3S3b7Ue3pV0EJvW/4m8i1z6m0YFZpYx9QfF6eX3k6nVqk3VFQFzO2s2+7G5A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html-docx-js/0.4.1/html-docx.min.js" integrity="sha512-Fzs7ix6qY3wVhVtH0mN3oXbctb9w6QeYh0mR7xexyY5xq9F7hKZ6A0kzM0NQ9JkH7+QiwQ2jD7G0Hk1jS2qjVQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" integrity="sha512-BNa5Y0wGk4m9c+oY0b9+0uoQ6XWmQQ2ZcT1t3rkcZQnmd2dJQW1YwslM5o8xQm9m5i8d0o8QhQ2x3bYw2+N6gA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha512-Ycs0M5FzZkQ5gK0jYl2E7rK3i8r0q8U8cVdY4wzqVb8jQKX4KXr3/0M7JrJqjRzv3eB1f5w1pI1p3O1w6mVPGw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <!-- Export libs: note the escaped closing tags -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js" integrity="sha512-5x3b7R3v7Hq8+vPa8mYb+1v7YH3S3b7Ue3pV0EJvW/4m8i1z6m0YFZpYx9QfF6eX3k6nVqk3VFQFzO2s2+7G5A==" crossorigin="anonymous" referrerpolicy="no-referrer"><\/script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html-docx-js/0.4.1/html-docx.min.js" integrity="sha512-Fzs7ix6qY3wVhVtH0mN3oXbctb9w6QeYh0mR7xexyY5xq9F7hKZ6A0kzM0NQ9JkH7+QiwQ2jD7G0Hk1jS2qjVQ==" crossorigin="anonymous" referrerpolicy="no-referrer"><\/script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" integrity="sha512-BNa5Y0wGk4m9c+oY0b9+0uoQ6XWmQQ2ZcT1t3rkcZQnmd2dJQW1YwslM5o8xQm9m5i8d0o8QhQ2x3bYw2+N6gA==" crossorigin="anonymous" referrerpolicy="no-referrer"><\/script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha512-Ycs0M5FzZkQ5gK0jYl2E7rK3i8r0q8U8cVdY4wzqVb8jQKX4KXr3/0M7JrJqjRzv3eB1f5w1pI1p3O1w6mVPGw==" crossorigin="anonymous" referrerpolicy="no-referrer"><\/script>
 
   <script>
     (function() {
@@ -311,11 +290,9 @@
         docx: document.getElementById('download-word-btn'),
       });
 
-      // Word export
       document.getElementById('download-word-btn').addEventListener('click', () => {
         try {
           const content = document.getElementById('quote-root').cloneNode(true);
-          // Remove the sticky bar if cloned accidentally
           const tmp = document.createElement('div');
           tmp.appendChild(content);
           const html = '<!DOCTYPE html><html><head><meta charset="utf-8"></head><body>' + tmp.innerHTML + '</body></html>';
@@ -327,14 +304,13 @@
         }
       });
 
-      // PDF export
       document.getElementById('download-pdf-btn').addEventListener('click', async () => {
         const { jsPDF } = window.jspdf || {};
-        if (!jsPDF) { alert('PDF engine not loaded yet—try again.'); return; }
+        if (!jsPDF) { alert('PDF engine not ready—try again.'); return; }
 
         const { bar } = buttons();
         const root = document.getElementById('quote-root');
-        bar.style.display = 'none'; // hide controls from snapshot
+        bar.style.display = 'none';
 
         try {
           const canvas = await html2canvas(root, { scale: 2 });
@@ -343,7 +319,6 @@
           const pageWidth = pdf.internal.pageSize.getWidth();
           const pageHeight = pdf.internal.pageSize.getHeight();
 
-          // Fit content width-wise
           const imgWidth = pageWidth;
           const imgHeight = canvas.height * (imgWidth / canvas.width);
 
@@ -362,21 +337,19 @@
         }
       });
     })();
-  </script>
+  <\/script>
 </body>
 </html>`;
     }
 
     // --- Wire up UI
     document.getElementById('add-product').addEventListener('click', addProductRow);
-    // Add one row initially
-    addProductRow();
+    addProductRow(); // start with one row
 
     document.getElementById('quote-form').addEventListener('submit', (e) => {
       e.preventDefault();
       const data = readForm();
 
-      // Open popup and WRITE the full HTML into it so scripts load & run
       const w = window.open('', '_blank');
       if (!w) {
         alert('Please allow pop-ups for this site to view and export the quote.');
@@ -386,7 +359,6 @@
       w.document.open();
       w.document.write(html);
       w.document.close();
-      // Focus for better UX in Bolt.new preview
       w.focus();
     });
   </script>
