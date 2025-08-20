@@ -1,477 +1,394 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Namaqua Wines - Quote Generator</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Garamond:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        .font-garamond {
-            font-family: 'Garamond', serif;
-        }
-        label {
-            @apply block text-sm font-medium text-gray-700 mb-1;
-        }
-        input, textarea, select {
-            @apply mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-amber-800 focus:ring-amber-800 sm:text-sm;
-        }
-        input:disabled {
-            @apply bg-gray-100 cursor-not-allowed;
-        }
-    </style>
+  <meta charset="utf-8" />
+  <meta
+    name="viewport"
+    content="width=device-width,initial-scale=1,viewport-fit=cover"
+  />
+  <title>Quote Generator</title>
+
+  <!-- Tailwind via CDN is fine for a standalone public page.
+       If you prefer your project CSS pipeline, you can remove this and use your compiled CSS. -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    /* Minor helpers */
+    .form-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 1rem; }
+    .field { grid-column: span 3 / span 3; }
+    .field-2 { grid-column: span 2 / span 2; }
+    .field-1 { grid-column: span 1 / span 1; }
+    @media (max-width: 768px) {
+      .field, .field-2, .field-1 { grid-column: span 6 / span 6; }
+    }
+    .btn { @apply inline-flex items-center justify-center px-4 py-2 rounded-lg font-medium border transition; }
+    .btn-primary { @apply bg-amber-700 text-white border-amber-800 hover:bg-amber-800; }
+    .btn-secondary { @apply bg-white text-amber-800 border-amber-800 hover:bg-amber-50; }
+  </style>
 </head>
-<body class="bg-gray-100">
+<body class="bg-amber-50 text-zinc-900">
+  <div class="max-w-5xl mx-auto p-6">
+    <header class="mb-6">
+      <h1 class="text-2xl font-bold text-amber-800">Quote Generator</h1>
+      <p class="text-sm text-zinc-600">Fill the form and generate a printable/exportable quote.</p>
+    </header>
 
-    <div class="max-w-4xl mx-auto my-10 p-8 bg-white shadow-xl rounded-lg">
-        <!-- Header -->
-        <header class="text-center mb-8">
-            <h1 class="font-garamond text-5xl tracking-widest text-amber-800">NAMAQUA</h1>
-            <h2 class="font-garamond text-xl tracking-[0.3em] text-gray-500">WINES</h2>
-            <div class="w-24 h-px bg-amber-800 mx-auto mt-2"></div>
-            <h3 class="text-2xl font-semibold text-gray-800 tracking-wide mt-6">Quote Generator</h3>
-        </header>
-
-        <!-- Form -->
-        <form id="quote-form">
-            <!-- Customer & Quote Details -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 border-b pb-6 mb-6">
-                <div class="space-y-4">
-                    <h4 class="text-lg font-semibold text-gray-800">Customer Information</h4>
-                    <div>
-                        <label for="customer_name">Customer Name</label>
-                        <input type="text" id="customer_name" required>
-                    </div>
-                    <div>
-                        <label for="customer_company">Company</label>
-                        <input type="text" id="customer_company" required>
-                    </div>
-                    <div>
-                        <label for="customer_address">Address</label>
-                        <textarea id="customer_address" rows="2" required></textarea>
-                    </div>
-                     <div>
-                        <label for="customer_co">Care Of (C/O)</label>
-                        <input type="text" id="customer_co">
-                    </div>
-                </div>
-                <div class="space-y-4">
-                    <h4 class="text-lg font-semibold text-gray-800">Quote Details</h4>
-                    <div>
-                        <label for="quote_number">Quote Number</label>
-                        <input type="text" id="quote_number" required>
-                    </div>
-                    <div>
-                        <label for="quote_date">Date</label>
-                        <input type="date" id="quote_date" required>
-                    </div>
-                    <div>
-                        <label for="quote_validity">Valid Until</label>
-                        <input type="date" id="quote_validity" required>
-                    </div>
-                    <div>
-                        <label for="destination">Destination</label>
-                        <input type="text" id="destination" required>
-                    </div>
-                     <div>
-                        <label for="currency">Currency</label>
-                        <select id="currency">
-                            <option value="$">USD ($)</option>
-                            <option value="€">EUR (€)</option>
-                            <option value="£">GBP (£)</option>
-                            <option value="R">ZAR (R)</option>
-                        </select>
-                    </div>
-                </div>
+    <form id="quote-form" class="space-y-6 bg-white p-6 rounded-2xl shadow">
+      <!-- Customer block -->
+      <section>
+        <h2 class="text-lg font-semibold text-amber-800 mb-3">Customer</h2>
+        <div class="form-grid">
+          <div class="field">
+            <label class="block text-sm font-medium mb-1">Customer Name</label>
+            <input id="customer_name" type="text" class="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-800" placeholder="John Doe" required />
+          </div>
+          <div class="field">
+            <label class="block text-sm font-medium mb-1">Company</label>
+            <input id="customer_company" type="text" class="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-800" placeholder="Acme Imports" />
+          </div>
+          <div class="field">
+            <label class="block text-sm font-medium mb-1">Email</label>
+            <input id="customer_email" type="email" class="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-800" placeholder="buyer@acme.com" />
+          </div>
+          <div class="field">
+            <label class="block text-sm font-medium mb-1">Address</label>
+            <input id="customer_address" type="text" class="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-800" placeholder="Street, City, Country" />
+          </div>
+          <div class="field-2">
+            <label class="block text-sm font-medium mb-1">Currency</label>
+            <select id="currency" class="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-800">
+              <option value="R">ZAR (R)</option>
+              <option value="$">USD ($)</option>
+              <option value="€">EUR (€)</option>
+              <option value="£">GBP (£)</option>
+            </select>
+          </div>
+          <div class="field-2">
+            <label class="block text-sm font-medium mb-1">Incoterm</label>
+            <div class="flex items-center gap-2">
+              <select id="incoterm" class="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-800">
+                <option value="EXW">EXW</option>
+                <option value="FOB">FOB</option>
+                <option value="CFR">CFR</option>
+                <option value="CIF">CIF</option>
+                <option value="DAP">DAP</option>
+                <option value="DDP">DDP</option>
+              </select>
+              <input id="port" type="text" class="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-800" placeholder="Port/Place" />
             </div>
+          </div>
+          <div class="field-2">
+            <label class="block text-sm font-medium mb-1">Quote #</label>
+            <input id="quote_number" type="text" class="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-800" placeholder="AUTO or custom" />
+          </div>
+        </div>
+      </section>
 
-            <!-- Products Section -->
-            <div class="border-b pb-4 mb-6">
-                <h4 class="text-lg font-semibold text-gray-800 mb-4">Products</h4>
-                <div id="products-container" class="space-y-4">
-                    <!-- Product rows will be injected here by JS -->
-                </div>
-                <button type="button" id="add-product-btn" class="mt-4 bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 transition duration-300 text-sm">Add Product</button>
-            </div>
+      <!-- Products -->
+      <section>
+        <h2 class="text-lg font-semibold text-amber-800 mb-3">Products</h2>
 
-            <!-- Terms & Conditions -->
-            <div class="mb-6">
-                 <h4 class="text-lg font-semibold text-gray-800 mb-4">Terms</h4>
-                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label for="incoterms_select">Incoterm</label>
-                            <select id="incoterms_select">
-                                <option>FOB</option>
-                                <option>EXW</option>
-                                <option>CIF</option>
-                                <option>CFR</option>
-                                <option>DAP</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="port_of_choice">Port / Place</label>
-                            <input type="text" id="port_of_choice">
-                        </div>
-                    </div>
-                    <div>
-                        <label for="lead_time">Lead Time</label>
-                        <input type="text" id="lead_time">
-                    </div>
-                    <div class="md:col-span-2">
-                        <label for="payment_terms">Payment Terms</label>
-                        <textarea id="payment_terms" rows="2"></textarea>
-                    </div>
-                    <div class="md:col-span-2">
-                        <label for="additional_conditions">Additional Conditions</label>
-                        <textarea id="additional_conditions" rows="2" placeholder="Enter any other terms here..."></textarea>
-                    </div>
-                 </div>
-            </div>
+        <div id="products" class="space-y-3"></div>
 
-            <!-- Generate Button -->
-            <div class="text-center mt-8">
-                <button type="submit" class="bg-amber-800 text-white py-3 px-8 rounded-lg hover:bg-amber-900 transition duration-300 font-semibold text-lg">Generate Quote</button>
-            </div>
-        </form>
+        <button id="add-product" type="button" class="btn btn-secondary mt-2">
+          + Add product
+        </button>
+      </section>
+
+      <!-- Notes -->
+      <section>
+        <h2 class="text-lg font-semibold text-amber-800 mb-3">Notes</h2>
+        <textarea id="notes" rows="4" class="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-800" placeholder="Payment terms, delivery, additional info..."></textarea>
+      </section>
+
+      <div class="flex flex-wrap gap-3 justify-end">
+        <button type="reset" class="btn btn-secondary">Reset</button>
+        <button id="generate" type="submit" class="btn btn-primary">Generate Quote</button>
+      </div>
+    </form>
+  </div>
+
+  <template id="product-row-tpl">
+    <div class="grid grid-cols-12 gap-3 items-end">
+      <div class="col-span-12 md:col-span-3">
+        <label class="block text-sm font-medium mb-1">Brand</label>
+        <select name="product_brand" class="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-800">
+          <option value="" disabled selected>Select brand</option>
+          <option>D'Aria</option>
+          <option>Namaqua</option>
+          <option>Cape West</option>
+          <option>Goiya</option>
+        </select>
+      </div>
+      <div class="col-span-12 md:col-span-3">
+        <label class="block text-sm font-medium mb-1">Product</label>
+        <select name="product_name" class="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-800" disabled>
+          <option value="" disabled selected>Select product</option>
+        </select>
+      </div>
+      <div class="col-span-6 md:col-span-2">
+        <label class="block text-sm font-medium mb-1">Qty</label>
+        <input name="qty" type="number" min="1" value="1" class="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-800" />
+      </div>
+      <div class="col-span-6 md:col-span-2">
+        <label class="block text-sm font-medium mb-1">Unit Price</label>
+        <input name="unit_price" type="number" step="0.01" min="0" value="0" class="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-800" />
+      </div>
+      <div class="col-span-12 md:col-span-2">
+        <button type="button" class="w-full btn btn-secondary border-red-300 text-red-700 hover:bg-red-50 remove-row">Remove</button>
+      </div>
     </div>
+  </template>
 
-    <script>
-        // --- DATA ---
-        const productList = {
-            "Spencer Bay Range": ["Merlot", "Pinotage", "Cabernet Sauvignon", "Shiraz", "Chenin Blanc", "Sauvignon Blanc"],
-            "Everyday Range": ["Smooth Dry Red", "Sweet Red", "Sweet Rosé", "Blanc de Blanc", "Sweet White"],
-            "Cultivar Range": ["Merlot", "Pinotage", "Cabernet Sauvignon", "Shiraz", "Sauvignon Blanc", "Chenin Blanc"],
-            "Heritage Range": ["Thé Blend", "Stoneflower", "Sandveld", "Cape West"],
-            "Blended Range (Gôiya)": ["Shiraz Pinotage", "Chard/Sauv Blanc"]
-        };
+  <script>
+    // --- Simple product catalog to enable brand -> product dependency
+    const PRODUCT_CATALOG = {
+      "D'Aria": ["Songbird Sauvignon Blanc", "Blush Rosé", "Merlot"],
+      "Namaqua": ["Sweet Rosé", "Dry White", "Cabernet Sauvignon"],
+      "Cape West": ["Chenin Blanc", "Shiraz", "Chardonnay"],
+      "Goiya": ["Sauvignon Blanc", "Cabernet Sauvignon"]
+    };
 
-        // --- INITIALIZATION ---
-        const today = new Date();
-        const validUntil = new Date();
-        validUntil.setDate(today.getDate() + 30);
-        document.getElementById('quote_date').valueAsDate = today;
-        document.getElementById('quote_validity').valueAsDate = validUntil;
+    // --- Helpers
+    const fmtMoney = (symbol, n) => `${symbol}${Number(n || 0).toFixed(2)}`;
 
-        // --- QUOTE NUMBER GENERATION ---
-        function generateQuoteNumber() {
-            const now = new Date();
-            const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const day = String(now.getDate()).padStart(2, '0');
-            const dateKey = `${year}-${month}${day}`;
-            
-            // Get today's quote count from localStorage
-            const storageKey = `quote_count_${dateKey}`;
-            let count = parseInt(localStorage.getItem(storageKey) || '0') + 1;
-            
-            // Store updated count
-            localStorage.setItem(storageKey, count.toString());
-            
-            return `NWD-${dateKey}/${String(count).padStart(2, '0')}`;
+    function addProductRow() {
+      const tpl = document.getElementById('product-row-tpl');
+      const row = tpl.content.firstElementChild.cloneNode(true);
+      const brandSelect = row.querySelector('[name="product_brand"]');
+      const productSelect = row.querySelector('[name="product_name"]');
+
+      brandSelect.addEventListener('change', () => {
+        const brand = brandSelect.value;
+        const products = PRODUCT_CATALOG[brand] || [];
+        productSelect.innerHTML = '<option value="" disabled selected>Select product</option>';
+        for (const p of products) {
+          const opt = document.createElement('option');
+          opt.value = p;
+          opt.textContent = p;
+          productSelect.appendChild(opt);
         }
+        productSelect.disabled = products.length === 0;
+      });
 
-        // Auto-fill quote number on page load
-        document.getElementById('quote_number').value = generateQuoteNumber();
+      row.querySelector('.remove-row').addEventListener('click', () => row.remove());
+      document.getElementById('products').appendChild(row);
+    }
 
-        // --- PRODUCT MANAGEMENT ---
-        const productsContainer = document.getElementById('products-container');
-        const addProductBtn = document.getElementById('add-product-btn');
+    function readForm() {
+      const currencySel = document.getElementById('currency');
+      const symbol = currencySel.value;
+      const code = currencySel.options[currencySel.selectedIndex].text.split(' ')[0];
 
-        const addProductRow = (product = {}) => {
-            const productRow = document.createElement('div');
-            productRow.className = 'grid grid-cols-1 md:grid-cols-12 gap-2 items-center product-row';
+      // Collect products
+      const rows = Array.from(document.querySelectorAll('#products > div.grid'));
+      const items = rows.map(r => {
+        const brand = r.querySelector('[name="product_brand"]').value || '';
+        const name = r.querySelector('[name="product_name"]').value || '';
+        const qty = parseFloat(r.querySelector('[name="qty"]').value || '0');
+        const unit = parseFloat(r.querySelector('[name="unit_price"]').value || '0');
+        const line_total = qty * unit;
+        return { brand, name, qty, unit, line_total };
+      }).filter(x => x.name);
 
-            // Create Brand and Product Select Dropdowns
-            let brandSelectHTML = '<div class="md:col-span-2"><select name="product_brand" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-amber-800 focus:ring-amber-800 sm:text-sm" required>';
-            brandSelectHTML += '<option value="">Select Brand</option>';
-            for (const range in productList) {
-                const selected = product.brand === range ? 'selected' : '';
-                brandSelectHTML += `<option value="${range}" ${selected}>${range}</option>`;
-            }
-            brandSelectHTML += '</select></div>';
+      const subtotal = items.reduce((a, b) => a + b.line_total, 0);
 
-            let productSelectHTML = '<div class="md:col-span-2"><select name="product_name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-amber-800 focus:ring-amber-800 sm:text-sm" required disabled>';
-            productSelectHTML += '<option value="">Select Product</option>';
-            if (product.brand && productList[product.brand]) {
-                productList[product.brand].forEach(wine => {
-                    const selected = product.name === wine ? 'selected' : '';
-                    productSelectHTML += `<option value="${wine}" ${selected}>${wine}</option>`;
-                });
-            }
-            productSelectHTML += '</select></div>';
+      const incoterm = document.getElementById('incoterm').value;
+      const port = document.getElementById('port').value;
+      const quoteNo = document.getElementById('quote_number').value || `Q-${Date.now().toString().slice(-6)}`;
 
-            productRow.innerHTML = brandSelectHTML + productSelectHTML + `
-                <div class="md:col-span-2"><input type="number" name="product_pallets" placeholder="Pallets" value="${product.pallets || ''}" min="0" step="1" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-amber-800 focus:ring-amber-800 sm:text-sm"></div>
-                <div class="md:col-span-2"><input type="number" name="product_units_per_pallet" placeholder="Units/Pallet" value="${product.units_per_pallet || 840}" min="0" step="1" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-amber-800 focus:ring-amber-800 sm:text-sm"></div>
-                <div class="md:col-span-2"><input type="number" name="product_price" placeholder="Unit Price" value="${product.price || ''}" min="0" step="0.01" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-amber-800 focus:ring-amber-800 sm:text-sm"></div>
-                <div class="md:col-span-2 flex items-end h-full"><button type="button" class="remove-product-btn bg-red-600 text-white py-2 px-3 rounded-lg hover:bg-red-700 transition w-full text-xs mt-1">Remove</button></div>
-            `;
-            productsContainer.appendChild(productRow);
+      return {
+        customer_name: document.getElementById('customer_name').value,
+        customer_company: document.getElementById('customer_company').value,
+        customer_email: document.getElementById('customer_email').value,
+        customer_address: document.getElementById('customer_address').value,
+        currency_symbol: symbol, currency_code: code,
+        incoterm, port, quote_no: quoteNo,
+        items, subtotal,
+        notes: document.getElementById('notes').value
+      };
+    }
 
-            // Add event listener for brand selection
-            const brandSelect = productRow.querySelector('[name="product_brand"]');
-            const productSelect = productRow.querySelector('[name="product_name"]');
-            
-            brandSelect.addEventListener('change', function() {
-                const selectedBrand = this.value;
-                productSelect.innerHTML = '<option value="">Select Product</option>';
-                
-                if (selectedBrand && productList[selectedBrand]) {
-                    productSelect.disabled = false;
-                    productList[selectedBrand].forEach(wine => {
-                        productSelect.innerHTML += `<option value="${wine}">${wine}</option>`;
-                    });
-                } else {
-                    productSelect.disabled = true;
-                }
-            });
-        };
+    function generateQuoteHTML(form) {
+      const rows = form.items.map((it, i) => `
+        <tr>
+          <td class="px-3 py-2 border-b">${i + 1}</td>
+          <td class="px-3 py-2 border-b">${it.brand || '-'}</td>
+          <td class="px-3 py-2 border-b">${it.name}</td>
+          <td class="px-3 py-2 border-b text-right">${it.qty}</td>
+          <td class="px-3 py-2 border-b text-right">${fmtMoney(form.currency_symbol, it.unit)}</td>
+          <td class="px-3 py-2 border-b text-right">${fmtMoney(form.currency_symbol, it.line_total)}</td>
+        </tr>
+      `).join('');
 
-        const initialProducts = [
-        ];
-        initialProducts.forEach(addProductRow);
+      const incotermFull = form.port ? `${form.incoterm} (${form.port}) Incoterms® 2020` : `${form.incoterm} Incoterms® 2020`;
 
-        addProductBtn.addEventListener('click', () => addProductRow());
-        productsContainer.addEventListener('click', (e) => {
-            if (e.target.classList.contains('remove-product-btn')) {
-                e.target.closest('.product-row').remove();
-            }
-        });
+      // IMPORTANT: include export libraries INSIDE the popup so the buttons work
+      return `<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Quotation ${form.quote_no}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @media print { #button-bar { display: none !important; } }
+  </style>
+</head>
+<body class="bg-white text-zinc-900">
+  <div id="button-bar" class="sticky top-0 z-10 bg-amber-50 border-b border-amber-200 px-4 py-3 flex gap-2 justify-end">
+    <button id="download-word-btn" class="inline-flex items-center px-3 py-2 rounded-lg bg-white text-amber-800 border border-amber-800 hover:bg-amber-50">Download Word</button>
+    <button id="download-pdf-btn" class="inline-flex items-center px-3 py-2 rounded-lg bg-amber-700 text-white border border-amber-800 hover:bg-amber-800">Download PDF</button>
+    <button onclick="window.print()" class="inline-flex items-center px-3 py-2 rounded-lg bg-white text-amber-800 border border-amber-800 hover:bg-amber-50">Print</button>
+  </div>
 
-        // --- INCOTERMS LOGIC ---
-        const incotermsSelect = document.getElementById('incoterms_select');
-        const portOfChoiceInput = document.getElementById('port_of_choice');
-        const destinationInput = document.getElementById('destination');
+  <main id="quote-root" class="max-w-4xl mx-auto p-6">
+    <header class="mb-6">
+      <h1 class="text-2xl font-bold text-amber-800">Quotation</h1>
+      <div class="text-sm text-zinc-600">Quote #: ${form.quote_no}</div>
+    </header>
 
-        function updateIncoterms() {
-            const selectedTerm = incotermsSelect.value;
-            switch (selectedTerm) {
-                case 'EXW':
-                    portOfChoiceInput.value = 'Blackheath, South Africa';
-                    portOfChoiceInput.disabled = true;
-                    break;
-                case 'FOB':
-                    portOfChoiceInput.value = 'Cape Town, South Africa';
-                    portOfChoiceInput.disabled = true;
-                    break;
-                case 'CIF': case 'CFR': case 'DAP':
-                    portOfChoiceInput.value = destinationInput.value;
-                    portOfChoiceInput.disabled = false;
-                    break;
-                default:
-                    portOfChoiceInput.value = '';
-                    portOfChoiceInput.disabled = false;
-            }
+    <section class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+      <div class="space-y-1">
+        <div class="font-semibold">Bill To</div>
+        <div>${form.customer_name || ''}</div>
+        <div>${form.customer_company || ''}</div>
+        <div>${form.customer_email || ''}</div>
+        <div>${form.customer_address || ''}</div>
+      </div>
+      <div class="space-y-1">
+        <div><span class="font-semibold">Currency:</span> ${form.currency_code}</div>
+        <div><span class="font-semibold">Incoterms:</span> ${incotermFull}</div>
+        <div><span class="font-semibold">Date:</span> ${new Date().toLocaleDateString()}</div>
+      </div>
+    </section>
+
+    <section class="mb-6">
+      <table class="w-full border-collapse">
+        <thead>
+          <tr class="bg-amber-100">
+            <th class="px-3 py-2 text-left">#</th>
+            <th class="px-3 py-2 text-left">Brand</th>
+            <th class="px-3 py-2 text-left">Product</th>
+            <th class="px-3 py-2 text-right">Qty</th>
+            <th class="px-3 py-2 text-right">Unit</th>
+            <th class="px-3 py-2 text-right">Line Total</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+        <tfoot>
+          <tr class="border-t">
+            <td colspan="5" class="px-3 py-2 text-right font-semibold">Subtotal</td>
+            <td class="px-3 py-2 text-right font-semibold">${fmtMoney(form.currency_symbol, form.subtotal)}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </section>
+
+    ${form.notes ? `
+    <section class="mb-6">
+      <div class="font-semibold mb-1">Notes</div>
+      <div class="text-sm whitespace-pre-wrap">${form.notes}</div>
+    </section>` : ''}
+
+    <footer class="text-xs text-zinc-500 mt-8">
+      Generated by Quote Generator
+    </footer>
+  </main>
+
+  <!-- Export libs (must be in the popup so handlers work) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js" integrity="sha512-5x3b7R3v7Hq8+vPa8mYb+1v7YH3S3b7Ue3pV0EJvW/4m8i1z6m0YFZpYx9QfF6eX3k6nVqk3VFQFzO2s2+7G5A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html-docx-js/0.4.1/html-docx.min.js" integrity="sha512-Fzs7ix6qY3wVhVtH0mN3oXbctb9w6QeYh0mR7xexyY5xq9F7hKZ6A0kzM0NQ9JkH7+QiwQ2jD7G0Hk1jS2qjVQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" integrity="sha512-BNa5Y0wGk4m9c+oY0b9+0uoQ6XWmQQ2ZcT1t3rkcZQnmd2dJQW1YwslM5o8xQm9m5i8d0o8QhQ2x3bYw2+N6gA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha512-Ycs0M5FzZkQ5gK0jYl2E7rK3i8r0q8U8cVdY4wzqVb8jQKX4KXr3/0M7JrJqjRzv3eB1f5w1pI1p3O1w6mVPGw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+  <script>
+    (function() {
+      const fileBase = 'Quotation-${form.quote_no}';
+      const buttons = () => ({
+        bar: document.getElementById('button-bar'),
+        pdf: document.getElementById('download-pdf-btn'),
+        docx: document.getElementById('download-word-btn'),
+      });
+
+      // Word export
+      document.getElementById('download-word-btn').addEventListener('click', () => {
+        try {
+          const content = document.getElementById('quote-root').cloneNode(true);
+          // Remove the sticky bar if cloned accidentally
+          const tmp = document.createElement('div');
+          tmp.appendChild(content);
+          const html = '<!DOCTYPE html><html><head><meta charset="utf-8"></head><body>' + tmp.innerHTML + '</body></html>';
+          const blob = window.htmlDocx.asBlob(html);
+          saveAs(blob, fileBase + '.docx');
+        } catch (err) {
+          console.error('DOCX Error', err);
+          alert('Error generating Word document.');
         }
-        incotermsSelect.addEventListener('change', updateIncoterms);
-        destinationInput.addEventListener('input', () => {
-            if (['CIF', 'CFR', 'DAP'].includes(incotermsSelect.value)) {
-                portOfChoiceInput.value = destinationInput.value;
-            }
-        });
-        updateIncoterms();
+      });
 
-        // --- FORM SUBMISSION ---
-        document.getElementById('quote-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const selectedTerm = incotermsSelect.value;
-            const port = portOfChoiceInput.value;
-            const fullIncoterm = `${selectedTerm} (${port}) Incoterms® 2020`;
-            
-            const currencySelect = document.getElementById('currency');
-            const currencySymbol = currencySelect.options[currencySelect.selectedIndex].value;
-            const currencyCode = currencySelect.options[currencySelect.selectedIndex].text.split(' ')[0];
+      // PDF export
+      document.getElementById('download-pdf-btn').addEventListener('click', async () => {
+        const { jsPDF } = window.jspdf || {};
+        if (!jsPDF) { alert('PDF engine not loaded yet—try again.'); return; }
 
-            const formData = {
-                customer_name: document.getElementById('customer_name').value,
-                customer_company: document.getElementById('customer_company').value,
-                customer_address: document.getElementById('customer_address').value.replace(/\n/g, '<br>'),
-                customer_co: document.getElementById('customer_co').value,
-                quote_number: document.getElementById('quote_number').value,
-                quote_date: new Date(document.getElementById('quote_date').value).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
-                quote_validity: new Date(document.getElementById('quote_validity').value).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
-                destination: destinationInput.value,
-                incoterms: fullIncoterm,
-                lead_time: document.getElementById('lead_time').value,
-                payment_terms: document.getElementById('payment_terms').value,
-                additional_conditions: document.getElementById('additional_conditions').value,
-                currency_symbol: currencySymbol,
-                currency_code: currencyCode,
-                products: []
-            };
+        const { bar } = buttons();
+        const root = document.getElementById('quote-root');
+        bar.style.display = 'none'; // hide controls from snapshot
 
-            document.querySelectorAll('.product-row').forEach(row => {
-                const brand = row.querySelector('[name="product_brand"]').value;
-                const productName = row.querySelector('[name="product_name"]').value;
-                const pallets = parseFloat(row.querySelector('[name="product_pallets"]').value) || 0;
-                const units_per_pallet = parseFloat(row.querySelector('[name="product_units_per_pallet"]').value) || 0;
-                const price = parseFloat(row.querySelector('[name="product_price"]').value) || 0;
-                
-                if (brand && productName) {
-                    let displayName = productName;
-                    if (brand === "Spencer Bay Range") {
-                        displayName = `Spencer Bay ${productName}`;
-                    } else if (brand === "Blended Range (Gôiya)") {
-                        displayName = `Gôiya ${productName}`;
-                    }
-                    
-                    formData.products.push({
-                        desc: displayName,
-                        pallets, units_per_pallet, price,
-                        total_units: pallets * units_per_pallet,
-                        total_amount: pallets * units_per_pallet * price
-                    });
-                }
-            });
-            
-            const quoteWindow = window.open('', '_blank');
-            
-            // Replace current page content with the quote
-            document.body.innerHTML = generateQuoteHTML(formData);
-        });
+        try {
+          const canvas = await html2canvas(root, { scale: 2 });
+          const imgData = canvas.toDataURL('image/png');
+          const pdf = new jsPDF('p', 'pt', 'a4');
+          const pageWidth = pdf.internal.pageSize.getWidth();
+          const pageHeight = pdf.internal.pageSize.getHeight();
 
-        function generateQuoteHTML(data) {
-            const productRowsHTML = data.products.map(p => `
-                <tr>
-                    <td style="padding: 10px; border: 1px solid #ddd;">${p.desc}</td>
-                    <td style="padding: 10px; text-align: right; border: 1px solid #ddd;">${p.pallets}</td>
-                    <td style="padding: 10px; text-align: right; border: 1px solid #ddd;">${p.units_per_pallet}</td>
-                    <td style="padding: 10px; text-align: right; border: 1px solid #ddd;">${p.total_units.toLocaleString()}</td>
-                    <td style="padding: 10px; text-align: right; border: 1px solid #ddd;">${data.currency_symbol}${p.price.toFixed(2)}</td>
-                    <td style="padding: 10px; text-align: right; border: 1px solid #ddd;">${data.currency_symbol}${p.total_amount.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                </tr>`).join('');
+          // Fit content width-wise
+          const imgWidth = pageWidth;
+          const imgHeight = canvas.height * (imgWidth / canvas.width);
 
-            const totals = data.products.reduce((acc, p) => {
-                acc.pallets += p.pallets; acc.units += p.total_units; acc.amount += p.total_amount; return acc;
-            }, { pallets: 0, units: 0, amount: 0 });
-
-            let termsHTML = `
-                <li><span style="font-weight: 600;">Pricing:</span> All prices are quoted in ${data.currency_code}.</li>
-                <li><span style="font-weight: 600;">Incoterms:</span> ${data.incoterms}</li>
-                <li><span style="font-weight: 600;">Payment Terms:</span> ${data.payment_terms}</li>
-                <li><span style="font-weight: 600;">Lead Time:</span> ${data.lead_time}</li>
-            `;
-            if (data.additional_conditions) {
-                 termsHTML += `<li><span style="font-weight: 600;">Additional Conditions:</span> ${data.additional_conditions}</li>`;
-            }
-
-            return `
-                <!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Quote ${data.quote_number}</title>
-                <script src="https://cdn.tailwindcss.com"><\/script>
-                <link href="https://fonts.googleapis.com/css2?family=Garamond:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-                <script src="https://unpkg.com/html-docx-js/dist/html-docx.js"><\/script>
-                <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"><\/script>
-                <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"><\/script>
-                <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"><\/script>
-                <style>body{font-family:'Inter',sans-serif}.font-garamond{font-family:'Garamond',serif}.no-export{display:none!important}@media screen{.no-export-screen-only{display:flex;gap:.5rem}}</style>
-                </head><body class="bg-gray-100 p-4">
-                <div id="quotation-content" class="max-w-4xl mx-auto my-4 p-8 bg-white rounded-lg shadow-xl">
-                    <header class="text-center mb-8"><h1 class="font-garamond text-5xl tracking-widest text-amber-800">NAMAQUA</h1><h2 class="font-garamond text-xl tracking-[0.3em] text-gray-500">WINES</h2><div class="w-24 h-px bg-amber-800 mx-auto mt-2"></div></header>
-                    <main>
-                        <div class="flex justify-between items-center mb-6"><h3 class="text-2xl font-semibold text-gray-800 text-center tracking-wide flex-grow">OFFICIAL QUOTATION</h3><div id="button-container" class="no-export-screen-only"><button id="download-word-btn" class="bg-blue-700 text-white py-2 px-4 rounded-lg hover:bg-blue-800 text-sm">Download Word</button><button id="download-pdf-btn" class="bg-red-700 text-white py-2 px-4 rounded-lg hover:bg-red-800 text-sm">Download PDF</button></div></div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6"><div><h4 class="font-semibold text-gray-700 mb-2">TO:</h4><p class="font-bold">${data.customer_name}</p><p>${data.customer_company}</p><p>${data.customer_address}</p><p class="mt-2"><span class="font-semibold">C/O:</span> ${data.customer_co}</p></div><div class="text-left md:text-right"><p><span class="font-semibold text-gray-700">Quote Number:</span> ${data.quote_number}</p><p><span class="font-semibold text-gray-700">Date:</span> ${data.quote_date}</p><p><span class="font-semibold text-gray-700">Valid Until:</span> ${data.quote_validity}</p><p><span class="font-semibold text-gray-700">Destination:</span> ${data.destination}</p></div></div>
-                        <div class="overflow-x-auto mb-6"><table class="min-w-full bg-white border border-gray-200" style="border-collapse:collapse;width:100%"><thead class="bg-gray-50"><tr><th style="padding:10px;text-align:left;border:1px solid #ddd;font-size:12px;text-transform:uppercase">Product Description</th><th style="padding:10px;text-align:right;border:1px solid #ddd;font-size:12px;text-transform:uppercase">Pallets</th><th style="padding:10px;text-align:right;border:1px solid #ddd;font-size:12px;text-transform:uppercase">Units/Pallet</th><th style="padding:10px;text-align:right;border:1px solid #ddd;font-size:12px;text-transform:uppercase">Total Units</th><th style="padding:10px;text-align:right;border:1px solid #ddd;font-size:12px;text-transform:uppercase">Unit Price (${data.currency_code})</th><th style="padding:10px;text-align:right;border:1px solid #ddd;font-size:12px;text-transform:uppercase">Total (${data.currency_code})</th></tr></thead><tbody>${productRowsHTML}</tbody><tfoot style="background-color:#f9fafb;font-weight:600"><tr><td style="padding:10px;border:1px solid #ddd">TOTALS</td><td style="padding:10px;text-align:right;border:1px solid #ddd">${totals.pallets}</td><td style="padding:10px;border:1px solid #ddd"></td><td style="padding:10px;text-align:right;border:1px solid #ddd">${totals.units.toLocaleString()}</td><td style="padding:10px;border:1px solid #ddd"></td><td style="padding:10px;text-align:right;border:1px solid #ddd">${data.currency_symbol}${totals.amount.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td></tr></tfoot></table></div>
-                        <div class="grid grid-cols-1 md:grid-cols-5 gap-8"><div class="md:col-span-3"><h4 class="font-semibold text-gray-700 mb-2">Terms & Conditions:</h4><ul class="list-disc list-inside text-sm text-gray-600 space-y-1">${termsHTML}</ul></div><div class="md:col-span-2 text-left md:text-right mt-4 md:mt-0"><p class="font-bold">Ernest Reyneke</p><p>Namaqua Wines Distribution Pty Ltd.</p><p class="text-sm text-gray-600">ernest@namaquawines.com</p><p class="text-sm text-gray-600">+27 82 308 4590</p></div></div>
-                    </main>
-                    <footer class="border-t-2 border-gray-200 mt-8 pt-4 text-center text-xs text-gray-500"><p>P O Box 75, Vredendal, 8160, Western Cape, South Africa</p><p>Tel: +27 (0)27 213 1080 | Fax: +27 (0)27 213 3476</p><p>info@namaquawines.com | www.namaquawines.co.za</p><p class="mt-2">Directors: P.A.E Colyn, C. J. Brand, W.P. Willson</p><p>Namaqua Wynkelders (Edms) Bpk. Reg no. 1952/000409/07 - a subsidiary of Namaqua Group.</p></footer>
-                </div>
-                <script>
-                    // Download Word function
-                    document.getElementById('download-word-btn').addEventListener('click', function() {
-                        try {
-                            // Hide buttons during export
-                            document.getElementById('button-container').style.display = 'none';
-                            
-                            // Get the content
-                            const content = document.getElementById('quotation-content').innerHTML;
-                            
-                            // Show buttons again
-                            document.getElementById('button-container').style.display = 'flex';
-                            
-                            // Create HTML for Word document
-                            const htmlContent = \`<!DOCTYPE html>
-                            <html>
-                            <head>
-                                <meta charset="UTF-8">
-                                <style>
-                                    body { font-family: Calibri, sans-serif; font-size: 11pt; margin: 20px; }
-                                    table { border-collapse: collapse; width: 100%; }
-                                    th, td { border: 1px solid #ddd; text-align: left; padding: 8px; }
-                                    th { background-color: #f2f2f2; }
-                                    .text-center { text-align: center; }
-                                    .text-right { text-align: right; }
-                                    .font-garamond { font-family: 'Times New Roman', serif; }
-                                </style>
-                            </head>
-                            <body>\${content}</body>
-                            </html>\`;
-                            
-                            // Convert to Word document
-                            const converted = htmlDocx.asBlob(htmlContent);
-                            saveAs(converted, \`Quotation-${data.quote_number}.docx\`);
-                        } catch (error) {
-                            console.error('Word download error:', error);
-                            alert('Error generating Word document. Please try again.');
-                        }
-                    });
-                    
-                    // Download PDF function
-                    document.getElementById('download-pdf-btn').addEventListener('click', function() {
-                        try {
-                            const { jsPDF } = window.jspdf;
-                            const element = document.getElementById('quotation-content');
-                            const buttonContainer = document.getElementById('button-container');
-                            
-                            // Hide buttons during capture
-                            buttonContainer.style.display = 'none';
-                            
-                            html2canvas(element, {
-                                scale: 2,
-                                useCORS: true,
-                                allowTaint: true,
-                                backgroundColor: '#ffffff'
-                            }).then(canvas => {
-                                // Show buttons again
-                                buttonContainer.style.display = 'flex';
-                                
-                                const imgData = canvas.toDataURL('image/png');
-                                const pdf = new jsPDF('p', 'mm', 'a4');
-                                
-                                const pdfWidth = pdf.internal.pageSize.getWidth();
-                                const pdfHeight = pdf.internal.pageSize.getHeight();
-                                const imgAspectRatio = canvas.width / canvas.height;
-                                
-                                let imgWidth = pdfWidth;
-                                let imgHeight = pdfWidth / imgAspectRatio;
-                                
-                                if (imgHeight > pdfHeight) {
-                                    imgHeight = pdfHeight;
-                                    imgWidth = imgHeight * imgAspectRatio;
-                                }
-                                
-                                const x = (pdfWidth - imgWidth) / 2;
-                                const y = (pdfHeight - imgHeight) / 2;
-                                
-                                pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
-                                pdf.save(\`Quotation-${data.quote_number}.pdf\`);
-                            }).catch(error => {
-                                buttonContainer.style.display = 'flex';
-                                console.error('PDF Error:', error);
-                                alert('Error generating PDF. Please try again.');
-                            });
-                        } catch (error) {
-                            console.error('PDF download error:', error);
-                            alert('Error generating PDF. Please try again.');
-                        }
-                    });
-                <\/script></body></html>`;
+          let y = 0;
+          while (y < imgHeight) {
+            if (y > 0) pdf.addPage();
+            pdf.addImage(imgData, 'PNG', 0, -y, imgWidth, imgHeight);
+            y += pageHeight;
+          }
+          pdf.save(fileBase + '.pdf');
+        } catch (err) {
+          console.error('PDF Error', err);
+          alert('Error generating PDF.');
+        } finally {
+          bar.style.display = 'flex';
         }
-    </script>
+      });
+    })();
+  </script>
+</body>
+</html>`;
+    }
+
+    // --- Wire up UI
+    document.getElementById('add-product').addEventListener('click', addProductRow);
+    // Add one row initially
+    addProductRow();
+
+    document.getElementById('quote-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const data = readForm();
+
+      // Open popup and WRITE the full HTML into it so scripts load & run
+      const w = window.open('', '_blank');
+      if (!w) {
+        alert('Please allow pop-ups for this site to view and export the quote.');
+        return;
+      }
+      const html = generateQuoteHTML(data);
+      w.document.open();
+      w.document.write(html);
+      w.document.close();
+      // Focus for better UX in Bolt.new preview
+      w.focus();
+    });
+  </script>
 </body>
 </html>
