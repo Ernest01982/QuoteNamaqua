@@ -1,16 +1,500 @@
-import React from 'react';
+import React, { useState } from 'react';
+
+interface Product {
+  brand: string;
+  name: string;
+  qty: number;
+  unitPrice: number;
+}
+
+interface QuoteItem {
+  brand: string;
+  name: string;
+  qty: number;
+  unit: number;
+  line_total: number;
+}
+
+interface QuoteForm {
+  customer_name: string;
+  customer_company: string;
+  customer_email: string;
+  customer_address: string;
+  currency_symbol: string;
+  currency_code: string;
+  incoterm: string;
+  port: string;
+  quote_no: string;
+  items: QuoteItem[];
+  subtotal: number;
+  notes: string;
+}
+
+const PRODUCT_CATALOG: Record<string, string[]> = {
+  "D'Aria": ['Songbird Sauvignon Blanc', 'Blush Rosé', 'Merlot'],
+  Namaqua: ['Sweet Rosé', 'Dry White', 'Cabernet Sauvignon'],
+  'Cape West': ['Chenin Blanc', 'Shiraz', 'Chardonnay'],
+  Goiya: ['Sauvignon Blanc', 'Cabernet Sauvignon'],
+};
+
+const currencies = [
+  { code: 'ZAR', symbol: 'R', label: 'ZAR (R)' },
+  { code: 'USD', symbol: '$', label: 'USD ($)' },
+  { code: 'EUR', symbol: '€', label: 'EUR (€)' },
+  { code: 'GBP', symbol: '£', label: 'GBP (£)' },
+];
+
+const fmtMoney = (symbol: string, n: number) => `${symbol}${Number(n || 0).toFixed(2)}`;
+
+const initialProduct: Product = { brand: '', name: '', qty: 1, unitPrice: 0 };
+
+function generateQuoteHTML(form: QuoteForm) {
+  const rows = form.items
+    .map(
+      (it, i) => `
+        <tr>
+          <td class="px-3 py-2 border-b">${i + 1}</td>
+          <td class="px-3 py-2 border-b">${it.brand || '-'}</td>
+          <td class="px-3 py-2 border-b">${it.name}</td>
+          <td class="px-3 py-2 border-b text-right">${it.qty}</td>
+          <td class="px-3 py-2 border-b text-right">${fmtMoney(form.currency_symbol, it.unit)}</td>
+          <td class="px-3 py-2 border-b text-right">${fmtMoney(form.currency_symbol, it.line_total)}</td>
+        </tr>
+      `,
+    )
+    .join('');
+
+  const incotermFull = form.port
+    ? `${form.incoterm} (${form.port}) Incoterms® 2020`
+    : `${form.incoterm} Incoterms® 2020`;
+
+  return `<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Quotation ${form.quote_no}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>@media print { #button-bar{display:none !important;} }</style>
+</head>
+<body class="bg-white text-zinc-900">
+  <div id="button-bar" class="sticky top-0 z-10 bg-amber-50 border-b border-amber-200 px-4 py-3 flex gap-2 justify-end">
+    <button id="download-word-btn" class="inline-flex items-center px-3 py-2 rounded-lg bg-white text-amber-800 border border-amber-800 hover:bg-amber-50">Download Word</button>
+    <button id="download-pdf-btn" class="inline-flex items-center px-3 py-2 rounded-lg bg-amber-700 text-white border border-amber-800 hover:bg-amber-800">Download PDF</button>
+    <button onclick="window.print()" class="inline-flex items-center px-3 py-2 rounded-lg bg-white text-amber-800 border border-amber-800 hover:bg-amber-50">Print</button>
+  </div>
+
+  <main id="quote-root" class="max-w-4xl mx-auto p-6">
+    <header class="mb-6">
+      <h1 class="text-2xl font-bold text-amber-800">Quotation</h1>
+      <div class="text-sm text-zinc-600">Quote #: ${form.quote_no}</div>
+    </header>
+
+    <section class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+      <div class="space-y-1">
+        <div class="font-semibold">Bill To</div>
+        <div>${form.customer_name || ''}</div>
+        <div>${form.customer_company || ''}</div>
+        <div>${form.customer_email || ''}</div>
+        <div>${form.customer_address || ''}</div>
+      </div>
+      <div class="space-y-1">
+        <div><span class="font-semibold">Currency:</span> ${form.currency_code}</div>
+        <div><span class="font-semibold">Incoterms:</span> ${incotermFull}</div>
+        <div><span class="font-semibold">Date:</span> ${new Date().toLocaleDateString()}</div>
+      </div>
+    </section>
+
+    <section class="mb-6">
+      <table class="w-full border-collapse">
+        <thead>
+          <tr class="bg-amber-100">
+            <th class="px-3 py-2 text-left">#</th>
+            <th class="px-3 py-2 text-left">Brand</th>
+            <th class="px-3 py-2 text-left">Product</th>
+            <th class="px-3 py-2 text-right">Qty</th>
+            <th class="px-3 py-2 text-right">Unit</th>
+            <th class="px-3 py-2 text-right">Line Total</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+        <tfoot>
+          <tr class="border-t">
+            <td colspan="5" class="px-3 py-2 text-right font-semibold">Subtotal</td>
+            <td class="px-3 py-2 text-right font-semibold">${fmtMoney(form.currency_symbol, form.subtotal)}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </section>
+
+    ${form.notes ? `
+    <section class="mb-6">
+      <div class="font-semibold mb-1">Notes</div>
+      <div class="text-sm whitespace-pre-wrap">${form.notes}</div>
+    </section>` : ''}
+
+    <footer class="text-xs text-zinc-500 mt-8">Generated by Quote Generator</footer>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html-docx-js/0.4.1/html-docx.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script>
+    (function() {
+      const fileBase = 'Quotation-${form.quote_no}';
+      const buttons = () => ({
+        bar: document.getElementById('button-bar'),
+        pdf: document.getElementById('download-pdf-btn'),
+        docx: document.getElementById('download-word-btn'),
+      });
+
+      document.getElementById('download-word-btn').addEventListener('click', () => {
+        try {
+          const content = document.getElementById('quote-root').cloneNode(true);
+          const tmp = document.createElement('div');
+          tmp.appendChild(content);
+          const html = '<!DOCTYPE html><html><head><meta charset="utf-8"></head><body>' + tmp.innerHTML + '</body></html>';
+          const blob = window.htmlDocx.asBlob(html);
+          saveAs(blob, fileBase + '.docx');
+        } catch (err) {
+          console.error('DOCX Error', err);
+          alert('Error generating Word document.');
+        }
+      });
+
+      document.getElementById('download-pdf-btn').addEventListener('click', async () => {
+        const { jsPDF } = window.jspdf || {};
+        if (!jsPDF) { alert('PDF engine not ready—try again.'); return; }
+
+        const { bar } = buttons();
+        const root = document.getElementById('quote-root');
+        bar.style.display = 'none';
+
+        try {
+          const canvas = await html2canvas(root, { scale: 2 });
+          const imgData = canvas.toDataURL('image/png');
+          const pdf = new jsPDF('p', 'pt', 'a4');
+          const pageWidth = pdf.internal.pageSize.getWidth();
+          const pageHeight = pdf.internal.pageSize.getHeight();
+
+          const imgWidth = pageWidth;
+          const imgHeight = canvas.height * (imgWidth / canvas.width);
+
+          let y = 0;
+          while (y < imgHeight) {
+            if (y > 0) pdf.addPage();
+            pdf.addImage(imgData, 'PNG', 0, -y, imgWidth, imgHeight);
+            y += pageHeight;
+          }
+          pdf.save(fileBase + '.pdf');
+        } catch (err) {
+          console.error('PDF Error', err);
+          alert('Error generating PDF.');
+        } finally {
+          bar.style.display = 'flex';
+        }
+      });
+    })();
+  </script>
+</body>
+</html>`;
+}
 
 function App() {
-  // Redirect to the quote generator HTML file
-  React.useEffect(() => {
-    window.location.href = '/quote-generator.html';
-  }, []);
+  const [customerName, setCustomerName] = useState('');
+  const [customerCompany, setCustomerCompany] = useState('');
+  const [customerEmail, setCustomerEmail] = useState('');
+  const [customerAddress, setCustomerAddress] = useState('');
+  const [currency, setCurrency] = useState(currencies[0]);
+  const [incoterm, setIncoterm] = useState('EXW');
+  const [port, setPort] = useState('');
+  const [quoteNumber, setQuoteNumber] = useState('');
+  const [notes, setNotes] = useState('');
+  const [products, setProducts] = useState<Product[]>([{ ...initialProduct }]);
+
+  const addProduct = () => setProducts([...products, { ...initialProduct }]);
+
+  const updateProduct = (index: number, changes: Partial<Product>) => {
+    setProducts(products.map((p, i) => (i === index ? { ...p, ...changes } : p)));
+  };
+
+  const removeProduct = (index: number) => {
+    setProducts(products.filter((_, i) => i !== index));
+  };
+
+  const subtotal = products.reduce((sum, p) => sum + p.qty * p.unitPrice, 0);
+
+  const handleReset = () => {
+    setCustomerName('');
+    setCustomerCompany('');
+    setCustomerEmail('');
+    setCustomerAddress('');
+    setCurrency(currencies[0]);
+    setIncoterm('EXW');
+    setPort('');
+    setQuoteNumber('');
+    setNotes('');
+    setProducts([{ ...initialProduct }]);
+  };
+
+  const handleGenerate = (e: React.FormEvent) => {
+    e.preventDefault();
+    const items = products
+      .filter((p) => p.name)
+      .map((p) => ({
+        brand: p.brand,
+        name: p.name,
+        qty: p.qty,
+        unit: p.unitPrice,
+        line_total: p.qty * p.unitPrice,
+      }));
+    const form: QuoteForm = {
+      customer_name: customerName,
+      customer_company: customerCompany,
+      customer_email: customerEmail,
+      customer_address: customerAddress,
+      currency_symbol: currency.symbol,
+      currency_code: currency.code,
+      incoterm,
+      port,
+      quote_no: quoteNumber || `Q-${Date.now().toString().slice(-6)}`,
+      items,
+      subtotal: items.reduce((a, b) => a + b.line_total, 0),
+      notes,
+    };
+    const w = window.open('', '_blank');
+    if (!w) {
+      alert('Please allow pop-ups for this site to view and export the quote.');
+      return;
+    }
+    const html = generateQuoteHTML(form);
+    w.document.open();
+    w.document.write(html);
+    w.document.close();
+    w.focus();
+  };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-800 mx-auto mb-4"></div>
-        <p className="text-gray-600">Loading Quote Generator...</p>
+    <div className="bg-amber-50 text-zinc-900 min-h-screen">
+      <div className="max-w-5xl mx-auto p-6">
+        <header className="mb-6">
+          <h1 className="text-2xl font-bold text-amber-800">Quote Generator</h1>
+          <p className="text-sm text-zinc-600">Fill the form and generate a printable/exportable quote.</p>
+        </header>
+
+        <form onSubmit={handleGenerate} className="space-y-6 bg-white p-6 rounded-2xl shadow">
+          <section>
+            <h2 className="text-lg font-semibold text-amber-800 mb-3">Customer</h2>
+            <div className="grid grid-cols-6 gap-4">
+              <div className="col-span-6 md:col-span-3">
+                <label className="block text-sm font-medium mb-1">Customer Name</label>
+                <input
+                  type="text"
+                  className="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-800"
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  placeholder="John Doe"
+                  required
+                />
+              </div>
+              <div className="col-span-6 md:col-span-3">
+                <label className="block text-sm font-medium mb-1">Company</label>
+                <input
+                  type="text"
+                  className="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-800"
+                  value={customerCompany}
+                  onChange={(e) => setCustomerCompany(e.target.value)}
+                  placeholder="Acme Imports"
+                />
+              </div>
+              <div className="col-span-6 md:col-span-3">
+                <label className="block text-sm font-medium mb-1">Email</label>
+                <input
+                  type="email"
+                  className="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-800"
+                  value={customerEmail}
+                  onChange={(e) => setCustomerEmail(e.target.value)}
+                  placeholder="buyer@acme.com"
+                />
+              </div>
+              <div className="col-span-6 md:col-span-3">
+                <label className="block text-sm font-medium mb-1">Address</label>
+                <input
+                  type="text"
+                  className="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-800"
+                  value={customerAddress}
+                  onChange={(e) => setCustomerAddress(e.target.value)}
+                  placeholder="Street, City, Country"
+                />
+              </div>
+              <div className="col-span-6 md:col-span-2">
+                <label className="block text-sm font-medium mb-1">Currency</label>
+                <select
+                  className="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-800"
+                  value={currency.code}
+                  onChange={(e) => {
+                    const cur = currencies.find((c) => c.code === e.target.value);
+                    if (cur) setCurrency(cur);
+                  }}
+                >
+                  {currencies.map((c) => (
+                    <option key={c.code} value={c.code}>
+                      {c.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="col-span-6 md:col-span-2">
+                <label className="block text-sm font-medium mb-1">Incoterm</label>
+                <div className="flex items-center gap-2">
+                  <select
+                    className="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-800"
+                    value={incoterm}
+                    onChange={(e) => setIncoterm(e.target.value)}
+                  >
+                    {['EXW', 'FOB', 'CFR', 'CIF', 'DAP', 'DDP'].map((t) => (
+                      <option key={t} value={t}>
+                        {t}
+                      </option>
+                    ))}
+                  </select>
+                  <input
+                    type="text"
+                    className="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-800"
+                    value={port}
+                    onChange={(e) => setPort(e.target.value)}
+                    placeholder="Port/Place"
+                  />
+                </div>
+              </div>
+              <div className="col-span-6 md:col-span-2">
+                <label className="block text-sm font-medium mb-1">Quote #</label>
+                <input
+                  type="text"
+                  className="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-800"
+                  value={quoteNumber}
+                  onChange={(e) => setQuoteNumber(e.target.value)}
+                  placeholder="AUTO or custom"
+                />
+              </div>
+            </div>
+          </section>
+
+          <section>
+            <h2 className="text-lg font-semibold text-amber-800 mb-3">Products</h2>
+            <div className="space-y-3">
+              {products.map((p, i) => (
+                <div key={i} className="grid grid-cols-12 gap-3 items-end">
+                  <div className="col-span-12 md:col-span-3">
+                    <label className="block text-sm font-medium mb-1">Brand</label>
+                    <select
+                      className="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-800"
+                      value={p.brand}
+                      onChange={(e) => updateProduct(i, { brand: e.target.value, name: '' })}
+                    >
+                      <option value="" disabled>
+                        Select brand
+                      </option>
+                      {Object.keys(PRODUCT_CATALOG).map((b) => (
+                        <option key={b}>{b}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="col-span-12 md:col-span-3">
+                    <label className="block text-sm font-medium mb-1">Product</label>
+                    <select
+                      className="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-800"
+                      value={p.name}
+                      onChange={(e) => updateProduct(i, { name: e.target.value })}
+                      disabled={!p.brand}
+                    >
+                      <option value="" disabled>
+                        Select product
+                      </option>
+                      {(PRODUCT_CATALOG[p.brand] || []).map((prod) => (
+                        <option key={prod}>{prod}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="col-span-6 md:col-span-2">
+                    <label className="block text-sm font-medium mb-1">Qty</label>
+                    <input
+                      type="number"
+                      min="1"
+                      className="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-800"
+                      value={p.qty}
+                      onChange={(e) => updateProduct(i, { qty: Number(e.target.value) })}
+                    />
+                  </div>
+                  <div className="col-span-6 md:col-span-2">
+                    <label className="block text-sm font-medium mb-1">Unit Price</label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      className="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-800"
+                      value={p.unitPrice}
+                      onChange={(e) => updateProduct(i, { unitPrice: Number(e.target.value) })}
+                    />
+                  </div>
+                  <div className="col-span-12 md:col-span-2">
+                    <label className="block text-sm font-medium mb-1 md:text-right">Total</label>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 text-right">
+                        {fmtMoney(currency.symbol, p.qty * p.unitPrice)}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeProduct(i)}
+                        className="inline-flex items-center justify-center px-3 py-2 rounded-lg border border-red-300 text-red-700 bg-white hover:bg-red-50"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={addProduct}
+              className="inline-flex items-center justify-center px-4 py-2 mt-2 rounded-lg font-medium border border-amber-800 text-amber-800 bg-white hover:bg-amber-50"
+            >
+              + Add product
+            </button>
+            <div className="text-right font-semibold mt-2">
+              Subtotal: {fmtMoney(currency.symbol, subtotal)}
+            </div>
+          </section>
+
+          <section>
+            <h2 className="text-lg font-semibold text-amber-800 mb-3">Notes</h2>
+            <textarea
+              rows={4}
+              className="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-800"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Payment terms, delivery, additional info..."
+            />
+          </section>
+
+          <div className="flex flex-wrap gap-3 justify-end">
+            <button
+              type="button"
+              onClick={handleReset}
+              className="inline-flex items-center justify-center px-4 py-2 rounded-lg font-medium border border-amber-800 text-amber-800 bg-white hover:bg-amber-50"
+            >
+              Reset
+            </button>
+            <button
+              type="submit"
+              className="inline-flex items-center justify-center px-4 py-2 rounded-lg font-medium border border-amber-800 bg-amber-700 text-white hover:bg-amber-800"
+            >
+              Generate Quote
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
